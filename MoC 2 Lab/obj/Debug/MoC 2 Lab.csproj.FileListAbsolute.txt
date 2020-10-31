@@ -1,0 +1,6 @@
+C:\Users\PRIDE\source\repos\MoC 2 Lab\MoC 2 Lab\bin\Debug\MoC 2 Lab.exe.config
+C:\Users\PRIDE\source\repos\MoC 2 Lab\MoC 2 Lab\bin\Debug\MoC 2 Lab.exe
+C:\Users\PRIDE\source\repos\MoC 2 Lab\MoC 2 Lab\bin\Debug\MoC 2 Lab.pdb
+C:\Users\PRIDE\source\repos\MoC 2 Lab\MoC 2 Lab\obj\Debug\MoC 2 Lab.csprojAssemblyReference.cache
+C:\Users\PRIDE\source\repos\MoC 2 Lab\MoC 2 Lab\obj\Debug\MoC 2 Lab.exe
+C:\Users\PRIDE\source\repos\MoC 2 Lab\MoC 2 Lab\obj\Debug\MoC 2 Lab.pdb
