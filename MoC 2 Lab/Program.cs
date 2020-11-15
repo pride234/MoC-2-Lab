@@ -12,11 +12,13 @@ namespace MoC_2_Lab {
 
         static char[] alphabet = new[] { 'а', 'б', 'в', 'г', 'д', 'е', 'є', 'ж', 'з', 'и', 'і', 'ї', 'й', 'к', 'л', 'м', 'н', 'о', 'п', 'р', 'с', 'т', 'у', 'ф', 'х', 'ц', 'ч', 'ш', 'щ', 'ь', 'ю', 'я' };
         static string[] bigrams = null;
+        static string text = "";
         static Dictionary<char, int> Dictionary_char_freq = null;
         static Dictionary<string, int> Dictionary_bigrams_freq = null;
         static List<KeyValuePair<char, int>> List_char_freq = null;
         static List<KeyValuePair<string, int>> List_bigrams_freq = null;
-        static string text = "";
+        //static List<char> Afrq_char = new List<char>();
+        //static List<string> Afrq_bigrams = new List<string>();
         //static int most_freq = 5; //for criteria 2.0 and 2.1
         //static int k_f = 2; //for criteria 2.1
 
@@ -87,11 +89,11 @@ namespace MoC_2_Lab {
             List_char_freq = Dictionary_char_freq.ToList();
             List_bigrams_freq = Dictionary_bigrams_freq.ToList();
 
-            List_char_freq.Sort((pair1, pair2) => pair1.Value.CompareTo(pair2.Value)); ;
-            List_bigrams_freq.Sort((pair1, pair2) => pair1.Value.CompareTo(pair2.Value)); ;
+            List_char_freq.Sort((pair1, pair2) => pair1.Value.CompareTo(pair2.Value));
+            List_bigrams_freq.Sort((pair1, pair2) => pair1.Value.CompareTo(pair2.Value));
 
             string[] Y1 = ToVizhener(ToBreakText(text, 10_000, 100), false);
-            Criteria2_2(Y1, false, 5);
+            Criteria2_0(Y1, false, 5);
             string[] Y2 = ToAffine(ToBreakText(text, 10_000, 100), false);
             string[] Y3 = Uniform(ToBreakText(text, 10_000, 1_000), false);
             string[] Y4 = Formula(ToBreakText(text, 1_000, 10_000), false);
@@ -256,10 +258,11 @@ namespace MoC_2_Lab {
         }
 
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~||
-        static void Criteria2_0 (string[] Y, bool bit, int most_freq) {
+        static int[] Criteria2_0 (string[] Y, bool bit, int most_freq) {
 
             int N = Y.Length;
             int L = Y[0].Length;
+            int[] H = new int[2];
 
             Console.WriteLine("Criteria 2.0 is operating...");
             List<string> Afrq = new List<string>(most_freq);
@@ -277,7 +280,7 @@ namespace MoC_2_Lab {
                     break;
 
                 default:
-                    return;
+                    return null;
             }
 
             for (int i = 0; i < N; i++) {
@@ -287,22 +290,23 @@ namespace MoC_2_Lab {
                     cont &= Y[i].Contains(item);
                 }
                 if (cont)
-                    Console.WriteLine("N = {0}, L = {1}, Y[{2}] = H0", N, L, i);
+                    H[0]++;
                 else
-                    Console.WriteLine("N = {0}, L = {1}, Y[{2}] = H1", N, L, i);
+                    H[1]++;
             }
-
+            return H;
         }
 
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~||
-        static void Criteria2_1(string[] Y, bool bit, int most_freq, int k_f) {
+        static int[] Criteria2_1(string[] Y, bool bit, int most_freq, int k_f) {
             
             int N = Y.Length;
             int L = Y[0].Length;
+            int[] H = new int[2];
 
             if (k_f >= most_freq) {
                 Console.WriteLine("Invalid k_f!");
-                return;
+                return null;
             }
 
             Console.WriteLine("Criteria 2.1 is operating...");
@@ -321,7 +325,7 @@ namespace MoC_2_Lab {
                     break;
 
                 default:
-                    return;
+                    return null;
             }
 
             for (int i = 0; i < N; i++) {
@@ -331,108 +335,131 @@ namespace MoC_2_Lab {
                     if (Y[i].Contains(item)) Aaf.Add(item);
                 
                 if (Aaf.Count > k_f)
-                    Console.WriteLine("N = {0}, L = {1}, Y[{2}] = H0", N, L, i);
+                    H[0]++;
                 else
-                    Console.WriteLine("N = {0}, L = {1}, Y[{2}] = H1", N, L, i);
+                    H[1]++;
             }
+            return H;
         }
+
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~||
-        static void Criteria2_2(string[] Y, bool bit, int most_freq) {
+        static int[] Criteria2_2(string[] Y, bool bit, int most_freq) {
 
             int N = Y.Length;
             int L = Y[0].Length;
+            int[] H = new int[2];
 
             Console.WriteLine("Criteria 2.2 is operating...");
-            List<string> Afrq = new List<string>(most_freq);
 
             switch (bit) {
                 default:
                     break;
 
                 case false:
-                    for (int i = 0; i < most_freq; i++)
-                        Afrq.Add(List_char_freq.ElementAt(alphabet.Length - i - 1).Key.ToString());
                     for (int i = 0; i < N; i++) {
+                        List<string> Afrq = new List<string>(most_freq);
+                        for (int j = 0; j < most_freq; j++)
+                            Afrq.Add(List_char_freq.ElementAt(alphabet.Length - j - 1).Key.ToString());
+                        
                         Dictionary<char, double> Prob = CalculateCharProb(Y[i]);
+  
                         bool cont = false;
                         foreach (var item in Afrq) {
                             if(Prob[item[0]] < Dictionary_char_freq[item[0]] / text.Length) { 
-                                Console.WriteLine("N = {0}, L = {1}, Y[{2}] = H1", N, L, i);
+                                H[1]++;
                                 cont = true;
                                 break;
                             }
                         }
                         if (cont) continue;
-                        Console.WriteLine("N = {0}, L = {1}, Y[{2}] = H0", N, L, i);
+                        H[0]++;
                     }
-                    return;
+                    return H;
 
                 case true:
-                    for (int i = 0; i < most_freq; i++)
-                        Afrq.Add(List_bigrams_freq.ElementAt(bigrams.Length - i - 1).Key.ToString());
                     for (int i = 0; i < N; i++) {
+                        List<string> Afrq = new List<string>(most_freq);
+                        for (int j = 0; j < most_freq; j++)
+                            Afrq.Add(List_bigrams_freq.ElementAt(bigrams.Length - j - 1).Key.ToString());
+
                         Dictionary<string, double> Prob = CalculateBigramsProb(Y[i]);
                         bool cont = false;
                         foreach (var item in Afrq) {
                             if (Prob[item] < 2*Dictionary_bigrams_freq[item] / text.Length) {
-                                Console.WriteLine("N = {0}, L = {1}, Y[{2}] = H1", N, L, i);
+                                H[1]++;
                                 cont = true;
                                 break;
                             }
                         }
                         if (cont) continue;
-                        Console.WriteLine("N = {0}, L = {1}, Y[{2}] = H0", N, L, i);
+                        H[0]++;
                     }
-                    return;
+                    return H;
             }
+            return null;
         }
-
+        
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~||
-        static void Criteria2_3(string[] Y, bool bit, int most_freq) {
+        static int[] Criteria2_3(string[] Y, bool bit, int most_freq) {
 
             int N = Y.Length;
             int L = Y[0].Length;
+            int[] H = new int[2];
 
             Console.WriteLine("Criteria 2.3 is operating...");
-            List<string> Afrq = new List<string>(most_freq);
+
+            List<string> Afrq = new List<string>(most_freq); 
+            double Kf = 0;
 
             switch (bit) {
                 default:
-                    break;
+                    return null;
 
                 case false:
-                    for (int i = 0; i < most_freq; i++)
-                        Afrq.Add(List_char_freq.ElementAt(alphabet.Length - i - 1).Key.ToString());
+                    
+                    for (int j = 0; j < most_freq; j++)
+                        Afrq.Add(List_char_freq.ElementAt(alphabet.Length - j - 1).Key.ToString());
+
+                    Kf = 0;
+                    foreach (var item in Afrq) 
+                        Kf += Dictionary_char_freq[item[0]];                    
+                    Kf /= text.Length;
                     for (int i = 0; i < N; i++) {
+
                         Dictionary<char, double> Prob = CalculateCharProb(Y[i]);
+
                         double Ff = 0;
-                        double Kf = 0;
                         foreach (var item in Afrq) 
                             Ff += Prob[item[0]];
-                        foreach (var item in Dictionary_char_freq)
-                            Kf += item.Value;
-                        Kf /= text.Length;
-                        if (Ff < Kf) Console.WriteLine("N = {0}, L = {1}, Y[{2}] = H1", N, L, i);
-                        else Console.WriteLine("N = {0}, L = {1}, Y[{2}] = H0", N, L, i);
+                        if (Ff < Kf) 
+                            H[1]++;
+                        else 
+                            H[0]++;
                     }
-                    return;
+                    return H;
 
                 case true:
-                    for (int i = 0; i < most_freq; i++)
-                        Afrq.Add(List_bigrams_freq.ElementAt(bigrams.Length - i - 1).Key.ToString());
+                    for (int j = 0; j < most_freq; j++)
+                        Afrq.Add(List_bigrams_freq.ElementAt(bigrams.Length - j - 1).Key.ToString());
+
+                    Kf = 0;
+                    foreach (var item in Afrq) 
+                        Kf += Dictionary_char_freq[item[0]];
+                    Kf /= text.Length;
                     for (int i = 0; i < N; i++) {
+
                         Dictionary<string, double> Prob = CalculateBigramsProb(Y[i]);
+
                         double Ff = 0;
-                        double Kf = 0;
-                        foreach (var item in Afrq)
+                        foreach (var item in Afrq) 
                             Ff += Prob[item];
-                        foreach (var item in Dictionary_bigrams_freq)
-                            Kf += item.Value;
-                        Kf /= text.Length;
-                        if (Ff < Kf) Console.WriteLine("N = {0}, L = {1}, Y[{2}] = H1", N, L, i);
-                        else Console.WriteLine("N = {0}, L = {1}, Y[{2}] = H0", N, L, i);
+                        Kf = 2 * Kf / text.Length;
+                        if (Ff < Kf)
+                            H[1]++;
+                        else
+                            H[0]++;
                     }
-                    return;
+                    return H;
             }
         }
 
@@ -468,6 +495,13 @@ namespace MoC_2_Lab {
                 Result[bigrams[i]] = 2*Result[bigrams[i]] / Y.Length;
 
             return Result;
+        }
+
+        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~||
+        static void CalculatingAfrq () {
+
+
+
         }
     }
 }
