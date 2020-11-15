@@ -17,6 +17,8 @@ namespace MoC_2_Lab {
         static Dictionary<string, int> Dictionary_bigrams_freq = null;
         static List<KeyValuePair<char, int>> List_char_freq = null;
         static List<KeyValuePair<string, int>> List_bigrams_freq = null;
+        static double I_char = 0;
+        static double I_bigrams = 0;
         //static List<char> Afrq_char = new List<char>();
         //static List<string> Afrq_bigrams = new List<string>();
         //static int most_freq = 5; //for criteria 2.0 and 2.1
@@ -24,8 +26,6 @@ namespace MoC_2_Lab {
 
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~||
         static void Main(string[] args) {
-
-            int alphabetlen = 33;
 
             StreamReader origin = new StreamReader(@"C:\Users\PRIDE\source\repos\MoC 2 Lab\text.txt");
 
@@ -47,7 +47,7 @@ namespace MoC_2_Lab {
             form.Write(text);
             form.Close();
 
-            Dictionary_char_freq = new Dictionary<char, int>(alphabetlen);
+            Dictionary_char_freq = new Dictionary<char, int>(alphabet.Length);
 
             for (int i = 0; i < alphabet.Length; i++)
                 Dictionary_char_freq.Add(alphabet[i], 0);
@@ -55,7 +55,7 @@ namespace MoC_2_Lab {
             for (int i = 0; i < text.Length; i++)
                 Dictionary_char_freq[text[i]] += 1; 
 
-            Dictionary_bigrams_freq = new Dictionary<string, int>(alphabetlen * alphabetlen);
+            Dictionary_bigrams_freq = new Dictionary<string, int>(alphabet.Length * alphabet.Length);
 
             for (int i = 0; i < alphabet.Length; i++)
                 for (int j = 0; j < alphabet.Length; j++)
@@ -65,7 +65,6 @@ namespace MoC_2_Lab {
                 Dictionary_bigrams_freq[text.Substring(i, 2)] += 1;
 
             double H_char = 0;
-            double I_char = 0;
 
             foreach (KeyValuePair<char, int> a in Dictionary_char_freq) { 
                 double p = (double)a.Value / text.Length;
@@ -76,7 +75,6 @@ namespace MoC_2_Lab {
             I_char /= (text.Length * (text.Length - 1));
 
             double H_bigrams = 0;
-            double I_bigrams = 0;
 
             foreach (KeyValuePair<string, int> a in Dictionary_bigrams_freq) {
                 double p = (double)a.Value / text.Length;
@@ -444,8 +442,8 @@ namespace MoC_2_Lab {
 
                     Kf = 0;
                     foreach (var item in Afrq) 
-                        Kf += Dictionary_char_freq[item[0]];
-                    Kf /= text.Length;
+                        Kf += Dictionary_bigrams_freq[item];
+                    Kf = 2 * Kf / text.Length;
                     for (int i = 0; i < N; i++) {
 
                         Dictionary<string, double> Prob = CalculateBigramsProb(Y[i]);
@@ -453,11 +451,116 @@ namespace MoC_2_Lab {
                         double Ff = 0;
                         foreach (var item in Afrq) 
                             Ff += Prob[item];
-                        Kf = 2 * Kf / text.Length;
                         if (Ff < Kf)
                             H[1]++;
                         else
                             H[0]++;
+                    }
+                    return H;
+            }
+        }
+
+        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~||
+        static int[] Criteria4 (string[] Y, bool bit, double k_i) {
+
+            int N = Y.Length;
+            int L = Y[0].Length;
+            int[] H = new int[2];
+
+            switch (bit) {
+                default:
+                    return null;
+
+                case false:
+                    for (int i = 0; i < N; i++) {
+                        var Prob = CalculateCharProb(Y[i]);
+                        double I_local = 0;
+                        foreach (var item in Prob) {
+                            double value = item.Value*L;
+                            I_local+=value*(value-1);
+                        }
+                        I_local /= L*(L-1);
+                        if (Math.Abs(I_char - I_local) > k_i) 
+                            H[1]++;
+                        else 
+                            H[0]++;
+                    }
+                    return H;
+                case true:
+                    for (int i = 0; i < N; i++) {
+                        var Prob = CalculateBigramsProb(Y[i]);
+                        double I_local = 0;
+                        foreach (var item in Prob) {
+                            double value = item.Value * L;
+                            I_local += value * (value - 1);
+                        }
+                        I_local = 4*I_local/ (L * (L - 1));
+                        if (Math.Abs(I_bigrams - I_local) > k_i)
+                            H[1]++;
+                        else
+                            H[0]++;
+                    }
+                    return H;
+            }
+        }
+
+        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~||
+        static int[] Criteria5 (string[] Y, bool bit, int k_empty) {
+
+            int N = Y.Length;
+            int L = Y[0].Length;
+            int[] H = new int[2];
+            int[] rare = null;
+            int empty = 0;
+
+            switch (bit) {
+                default:
+                    return null;
+                case false:
+                    rare = new int[] {2,3,5};
+                    foreach (var j in rare) {
+
+                        Dictionary<char, int> Bprh = new Dictionary<char, int>(j);
+                        for (int i = 0; i < j; i++)
+                            Bprh.Add(List_char_freq.ElementAt(j).Key, 0);
+                        for (int i = 0; i < N; i++) {
+
+                            for (int k = 0; k < L; k++) 
+                                if (Bprh.ContainsKey(Y[i][k]))
+                                    Bprh[Y[i][k]]++;
+                            empty = 0;
+                            foreach (var item in Bprh) 
+                                if(item.Value == 0) 
+                                    empty++;                                                                                                
+                            if (empty <= k_empty)
+                                H[1]++;
+                            else 
+                                H[0]++;
+                        }
+                    }
+                    return H;
+
+                case true:
+                    rare = new int[] {50, 100, 200};
+                    foreach (var j in rare) {
+
+                        Dictionary<string, int> Bprh = new Dictionary<string, int>(j);
+                        for (int i = 0; i < j; i++)
+                            Bprh.Add(List_bigrams_freq.ElementAt(j).Key.ToString(),0);
+                        for (int i = 0; i < N; i++) {
+
+                            for (int k = 0; k < L; k+=2)
+                                if (Bprh.ContainsKey(Y[i].Substring(k,2)))
+                                    Bprh[Y[i].Substring(k, 2)]++;
+                            empty = 0;
+                            foreach (var item in Bprh)
+                                if (item.Value == 0)
+                                    empty++;
+                            if (empty <= k_empty)
+                                H[1]++;
+                            else
+                                H[0]++;
+                        }
                     }
                     return H;
             }
