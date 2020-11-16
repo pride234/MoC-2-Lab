@@ -49,5 +49,11 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\LZW\SharpLZW.csproj">
+      <Project>{c4520559-f0f6-463f-91d8-a004bf9e0720}</Project>
+      <Name>SharpLZW</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

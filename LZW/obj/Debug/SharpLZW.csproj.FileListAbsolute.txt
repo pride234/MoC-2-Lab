@@ -1,0 +1,5 @@
+C:\Users\PRIDE\source\repos\MoC 2 Lab\LZW\bin\Debug\SharpLZW.dll
+C:\Users\PRIDE\source\repos\MoC 2 Lab\LZW\bin\Debug\SharpLZW.pdb
+C:\Users\PRIDE\source\repos\MoC 2 Lab\LZW\obj\Debug\SharpLZW.csprojAssemblyReference.cache
+C:\Users\PRIDE\source\repos\MoC 2 Lab\LZW\obj\Debug\SharpLZW.dll
+C:\Users\PRIDE\source\repos\MoC 2 Lab\LZW\obj\Debug\SharpLZW.pdb

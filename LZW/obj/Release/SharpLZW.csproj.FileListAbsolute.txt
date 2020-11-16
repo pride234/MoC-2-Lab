@@ -1,0 +1,10 @@
+C:\Work\LZW Final\LZW\bin\Release\SharpLZW.dll
+C:\Work\LZW Final\LZW\bin\Release\SharpLZW.pdb
+C:\Work\LZW Final\LZW\obj\Release\ResolveAssemblyReference.cache
+C:\Work\LZW Final\LZW\obj\Release\SharpLZW.dll
+C:\Work\LZW Final\LZW\obj\Release\SharpLZW.pdb
+C:\Users\PRIDE\source\repos\LZW\bin\Release\SharpLZW.dll
+C:\Users\PRIDE\source\repos\LZW\bin\Release\SharpLZW.pdb
+C:\Users\PRIDE\source\repos\LZW\obj\Release\SharpLZW.csprojAssemblyReference.cache
+C:\Users\PRIDE\source\repos\LZW\obj\Release\SharpLZW.dll
+C:\Users\PRIDE\source\repos\LZW\obj\Release\SharpLZW.pdb

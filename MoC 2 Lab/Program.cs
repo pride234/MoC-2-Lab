@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -90,12 +91,17 @@ namespace MoC_2_Lab {
             List_char_freq.Sort((pair1, pair2) => pair1.Value.CompareTo(pair2.Value));
             List_bigrams_freq.Sort((pair1, pair2) => pair1.Value.CompareTo(pair2.Value));
 
-            string[] Y1 = ToVizhener(ToBreakText(text, 10_000, 100), false);
-            Criteria2_0(Y1, false, 5);
-            string[] Y2 = ToAffine(ToBreakText(text, 10_000, 100), false);
-            string[] Y3 = Uniform(ToBreakText(text, 10_000, 1_000), false);
-            string[] Y4 = Formula(ToBreakText(text, 1_000, 10_000), false);
+            //string[] Y1 = ToVizhener(ToBreakText(text, 10_000, 1000), false);
+            //Criteria2_0(Y1, false, 5);
+            //string[] Y2 = ToAffine(ToBreakText(text, 10_000, 100), false);
+            //string[] Y3 = Uniform(ToBreakText(text, 10_000, 1_000), false);
+            //string[] Y4 = Formula(ToBreakText(text, 1_000, 10_000), false);
 
+            SharpLZW.LZWEncoder Arch = new SharpLZW.LZWEncoder();
+            var result = Arch.EncodeToByteList(Arch.Encode(text));
+            var count1 = result.Count();
+            ASCIIEncoding.Unicode.GetByteCount(Arch.Encode(text));
+            var count2 = ASCIIEncoding.ASCII.GetByteCount(Arch.Encode(text));
         }
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~||
         static string[] ToBreakText (string text, int N, int L) {
@@ -601,10 +607,19 @@ namespace MoC_2_Lab {
         }
 
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~||
-        static void CalculatingAfrq () {
+        //static void LZW (string text) {
 
-
-
-        }
+        //    int L = text.Length;
+        //    List<int> result = new List<int>();
+        //    Dictionary<string, int> dic = new Dictionary<string, int>();
+        //    foreach (var item in alphabet) 
+        //        dic.Add(item.ToString(), -1);
+        //    int index = 1;
+        //    string tmp = text[index].ToString();
+        //    while (index < L) {
+                
+        //        //tmp += 
+        //    }
+        //}
     }
 }
