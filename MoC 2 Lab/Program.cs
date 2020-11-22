@@ -22,13 +22,6 @@ namespace MoC_2_Lab {
         static double I_bigrams = 0;
         static double compress = 0;
         static SharpLZW.LZWEncoder Arch = new SharpLZW.LZWEncoder();
-        static int criteria2_0_PAR = 5;
-        static int criteria2_1_PAR = 5;
-        static int criteria2_2_PAR = 5;
-        static int criteria2_3_PAR = 5;
-        static int criteria4_PAR = 5;
-        static int criteria5_PAR = 5;
-        static int criteriaStruct_PAR = 5;
 
         //static List<char> Afrq_char = new List<char>();
         //static List<string> Afrq_bigrams = new List<string>();
@@ -80,13 +73,13 @@ namespace MoC_2_Lab {
 
             double H_char = 0;
 
-            foreach (KeyValuePair<char, int> a in Dictionary_char_freq) { 
+            foreach (var a in Dictionary_char_freq) { 
                 double p = (double)a.Value / text.Length;
                 if (a.Value != 0) H_char -= p*Math.Log(p,2);
                 I_char += a.Value * (a.Value - 1);
             }
 
-            I_char /= (text.Length * (text.Length - 1));
+            I_char /= (double) text.Length * (text.Length - 1);
 
             double H_bigrams = 0;
 
@@ -96,7 +89,7 @@ namespace MoC_2_Lab {
                 I_bigrams += a.Value * (a.Value - 1);
             }
 
-            I_bigrams = 4*I_bigrams/(text.Length * (text.Length - 1));
+            I_bigrams = 4*I_bigrams/((double)text.Length * (text.Length - 1));
 
             List_char_freq = Dictionary_char_freq.ToList();
             List_bigrams_freq = Dictionary_bigrams_freq.ToList();
@@ -117,9 +110,79 @@ namespace MoC_2_Lab {
             //Dic.Add(ToBreakText(text, 10_000, 10), ToVizhener(ToBreakText(text, 10_000, 10), false));
             //Dic.Add(ToBreakText(text, 10_000, 10), ToVizhener(ToBreakText(text, 10_000, 10), true));
 
-            Arch.EncodeToByteList(Arch.Encode(ToBreakText(text, 3)[0]));
+            //Arch.EncodeToByteList(Arch.Encode(ToBreakText(text, 3)[0]));
 
-            foreach (var item in new bool[]{true, false }){
+            var HH = Criteria2_1(ToBreakText(text, 0), false);
+            //var H = Criteria2_1(ToDistort(ToBreakText(text, 0), 0, false), false);
+            Console.WriteLine();
+
+            for (int i = 0; i < 4; i++) { //Every Distortion
+
+                string Distortion = "";
+                if (i == 0) 
+                    Distortion = "Vizhener";
+                if (i == 1)
+                    Distortion = "Affine";
+                if (i == 2)
+                    Distortion = "Uniform";
+                if (i == 3)
+                    Distortion = "Formula";
+
+                for (int j = 0; j < 4; j++) { //Every N and L 
+
+                    string[] X = ToBreakText(text, j);
+                    int N = X.Length;
+                    int L = X[0].Length;
+
+                    foreach (var item0 in new bool[] { false, true }) { //Every type of Distortion
+                        
+                        string[] Y = ToDistort(X, i, item0);
+
+                        for (int k = 0; k < 7; k++) { //Every Criteria
+
+                            string CriteriaName = "";
+
+                            if (k == 0)
+                                CriteriaName = "Criteria 2.0";
+                            if (k == 1)
+                                CriteriaName = "Criteria 2.1";                    
+                            if (k == 2)
+                                CriteriaName = "Criteria 2.2";
+                            if (k == 3)
+                                CriteriaName = "Criteria 2.3";
+                            if (k == 4)
+                                CriteriaName = "Criteria 4";
+                            if (k == 5)
+                                CriteriaName = "Criteria 5";
+                            if (k == 6)
+                                CriteriaName = "Criteria Struct";
+
+                            foreach (var item1 in new bool[] { false, true }) { //Every type of Criteria
+
+                                int[] CritRes = null; 
+
+                                CritRes = ToCriteria(X, k, item1);
+
+                                double FP = (double)CritRes[1] / N;
+                                Console.WriteLine(
+                                    "Open Text; Distortion = {0}; N = {1}; L = {2}; Bigrams for Distortion = {3}; Criteria = {4}; Bigrams for Criteria = {5}; FP = {6}",
+                                    "n/a", N, L, "n/a", CriteriaName, item1, FP);
+
+                                CritRes = ToCriteria(Y, k, item1);
+
+                                double FN = (double)CritRes[0] / N;
+                                Console.WriteLine(
+                                    "Cipher text; Distortion = {0}; N = {1}; L = {2}; Bigrams for Distortion = {3}; Criteria = {4}; Bigrams for Criteria = {5}; FN = {6}",
+                                    Distortion, N, L, item0, CriteriaName, item1, FN);
+                            }
+                        }
+                    }
+                }
+            }
+
+            Console.WriteLine("I'm done!");
+
+            foreach (var item in new bool[]{true, false}){
 
                 for (int i = 0; i < 4; i++) {
                     string[] X = ToBreakText(text, i);
@@ -372,14 +435,17 @@ namespace MoC_2_Lab {
             switch (bit) {
 
                 case false:
-                    most_freq = 5;
+                    most_freq = 3;
                     Afrq = new List<string>(most_freq);
                     for (int i = 0; i < most_freq; i++)
                         Afrq.Add(List_char_freq.ElementAt(alphabet.Length-i-1).Key.ToString());
                     break;
 
                 case true:
-                    most_freq = 20;
+                    if (L == 10)
+                        most_freq = 1;
+                    else
+                        most_freq = 10;
                     Afrq = new List<string>(most_freq);
                     for (int i = 0; i < most_freq; i++)
                         Afrq.Add(List_bigrams_freq.ElementAt(bigrams.Length - i - 1).Key);
@@ -418,16 +484,28 @@ namespace MoC_2_Lab {
             switch (bit) {
 
                 case false:
-                    most_freq = 5;
-                    k_f = 3;
+                    if (L == 10) {
+                        most_freq = 3;
+                        k_f = 1;
+                    }
+                    else {
+                        most_freq = 5;
+                        k_f = 3;
+                    }
                     Afrq = new List<string>(most_freq);
                     for (int i = 0; i < most_freq; i++)
                         Afrq.Add(List_char_freq.ElementAt(alphabet.Length - i - 1).Key.ToString());
                     break;
 
                 case true:
-                    most_freq = 20;
-                    k_f = 15;
+                    if(L == 10) { 
+                        most_freq = 3;
+                        k_f = 1;
+                    }
+                    else { 
+                        most_freq = 15;
+                        k_f = 5;
+                    }
                     Afrq = new List<string>(most_freq);
                     for (int i = 0; i < most_freq; i++)
                         Afrq.Add(List_bigrams_freq.ElementAt(bigrams.Length - i - 1).Key);
@@ -463,10 +541,13 @@ namespace MoC_2_Lab {
 
             switch (bit) {
                 default:
-                    break;
+                    return null;
 
                 case false:
-                    most_freq = 5;
+                    if (L == 10)
+                        most_freq = 1;
+                    else
+                        most_freq = 3;
                     for (int i = 0; i < N; i++) {
                         List<string> Afrq = new List<string>(most_freq);
                         for (int j = 0; j < most_freq; j++)
@@ -476,7 +557,7 @@ namespace MoC_2_Lab {
   
                         bool cont = false;
                         foreach (var item in Afrq) {
-                            if(Prob[item[0]] < Dictionary_char_freq[item[0]] / text.Length) { 
+                            if(Prob[item[0]] < (double) Dictionary_char_freq[item[0]] / text.Length) { 
                                 H[1]++;
                                 cont = true;
                                 break;
@@ -488,7 +569,10 @@ namespace MoC_2_Lab {
                     return H;
 
                 case true:
-                    most_freq = 20;
+                    if (L == 10)
+                        most_freq = 1;
+                    else
+                        most_freq = 10; 
                     for (int i = 0; i < N; i++) {
                         List<string> Afrq = new List<string>(most_freq);
                         for (int j = 0; j < most_freq; j++)
@@ -497,7 +581,7 @@ namespace MoC_2_Lab {
                         Dictionary<string, double> Prob = CalculateBigramsProb(Y[i]);
                         bool cont = false;
                         foreach (var item in Afrq) {
-                            if (Prob[item] < 2*Dictionary_bigrams_freq[item] / text.Length) {
+                            if (Prob[item] < (double) 2 *Dictionary_bigrams_freq[item] / text.Length) {
                                 H[1]++;
                                 cont = true;
                                 break;
@@ -508,7 +592,6 @@ namespace MoC_2_Lab {
                     }
                     return H;
             }
-            return null;
         }
         
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~||
@@ -552,7 +635,10 @@ namespace MoC_2_Lab {
                     return H;
 
                 case true:
-                    most_freq = 20;
+                    if (L == 10)
+                        most_freq = 1;
+                    else
+                        most_freq = 10; 
                     for (int j = 0; j < most_freq; j++)
                         Afrq.Add(List_bigrams_freq.ElementAt(bigrams.Length - j - 1).Key.ToString());
 
@@ -588,8 +674,11 @@ namespace MoC_2_Lab {
                 default:
                     return null;
 
-                case false:
-                    k_i = 0.25;
+                case false:                                    
+                    if(L == 10)
+                        k_i = 0.1;
+                    else
+                        k_i = 0.02;
                     for (int i = 0; i < N; i++) {
                         var Prob = CalculateCharProb(Y[i]);
                         double I_local = 0;
@@ -597,7 +686,7 @@ namespace MoC_2_Lab {
                             double value = item.Value*L;
                             I_local+=value*(value-1);
                         }
-                        I_local /= L*(L-1);
+                        I_local /= (double)L*(L-1);
                         if (Math.Abs(I_char - I_local) > k_i) 
                             H[1]++;
                         else 
@@ -605,15 +694,18 @@ namespace MoC_2_Lab {
                     }
                     return H;
                 case true:
-                    k_i = 0.25;
+                    if (L == 10)
+                        k_i = 0.1;
+                    else
+                        k_i = 0.002;
                     for (int i = 0; i < N; i++) {
                         var Prob = CalculateBigramsProb(Y[i]);
                         double I_local = 0;
                         foreach (var item in Prob) {
-                            double value = item.Value * L;
+                            double value = (item.Value * (double) L) / 2;
                             I_local += value * (value - 1);
                         }
-                        I_local = 4*I_local/ (L * (L - 1));
+                        I_local =  4*I_local / ((double)L * (L - 1));
                         if (Math.Abs(I_bigrams - I_local) > k_i)
                             H[1]++;
                         else
@@ -637,16 +729,20 @@ namespace MoC_2_Lab {
                 default:
                     return null;
                 case false:
-                    k_empty = 3;
-                    rare = new int[] {2,3,5};
+                    if (L == 10) { 
+                        k_empty = 1;
+                    }
+                    else { 
+                        k_empty = 4;
+                    }
+                    rare = new int[] {5};
                     foreach (var j in rare) {
 
-                        Dictionary<char, int> Bprh = new Dictionary<char, int>(j);
-                        for (int i = 0; i < j; i++)
-                            if (Bprh.ContainsKey(List_char_freq.ElementAt(j).Key) == false) 
-                                Bprh.Add(List_char_freq.ElementAt(j).Key, 0);
                         for (int i = 0; i < N; i++) {
 
+                            Dictionary<char, int> Bprh = new Dictionary<char, int>(j);
+                            for (int k = 0; k < j; k++)
+                                Bprh.Add(List_char_freq.ElementAt(k).Key, 0);
                             for (int k = 0; k < L; k++) 
                                 if (Bprh.ContainsKey(Y[i][k]))
                                     Bprh[Y[i][k]]++;
@@ -663,14 +759,16 @@ namespace MoC_2_Lab {
                     return H;
 
                 case true:
-                    k_empty = 10;
-                    rare = new int[] {50, 100, 200};
+                    if (L == 10)
+                        k_empty = 1;
+                    else
+                        k_empty = 4; 
+                    rare = new int[] {100};
                     foreach (var j in rare) {
 
                         Dictionary<string, int> Bprh = new Dictionary<string, int>(j);
                         for (int i = 0; i < j; i++)
-                            if(Bprh.ContainsKey(List_bigrams_freq.ElementAt(j).Key.ToString()) == false) 
-                                Bprh.Add(List_bigrams_freq.ElementAt(j).Key.ToString(),0);
+                            Bprh.Add(List_bigrams_freq.ElementAt(i).Key.ToString(),0);
                         for (int i = 0; i < N; i++) {
 
                             for (int k = 0; k < L; k+=2)
@@ -695,10 +793,16 @@ namespace MoC_2_Lab {
             int N = Y.Length;
             int L = Y[0].Length;
             int[] H = new int[2];
-            double k = 0.3;
+            double k = 0;
+            if (L == 10)
+                k = 0.0085;
+            else 
+                k = 0.09;
             for (int i = 0; i < N; i++) {
                 var Arch = new SharpLZW.LZWEncoder();
-                if (Math.Abs((double)Arch.EncodeToByteList(Arch.Encode(Y[i])).Count() / ASCIIEncoding.ASCII.GetByteCount(Y[i]) - compress) <= k)
+                var compress_local_byte = Arch.EncodeToByteList(Y[i]).Count();
+                var ratio = (double)compress_local_byte / ASCIIEncoding.ASCII.GetByteCount(Y[i]);
+                if (Math.Abs(ratio - compress) <= k)
                     H[0]++;
                 else 
                     H[1]++;
@@ -757,5 +861,27 @@ namespace MoC_2_Lab {
             }
         }
 
+        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~||       
+        static int[] ToCriteria (string[] X, int alg, bool bit) {
+
+            switch (alg) {
+                default:
+                    return null;
+                case 0:
+                    return Criteria2_0(X, bit);
+                case 1:
+                    return Criteria2_1(X, bit);
+                case 2:
+                    return Criteria2_2(X, bit);
+                case 3:
+                    return Criteria2_3(X, bit);
+                case 4:
+                    return Criteria4(X, bit);
+                case 5:
+                    return Criteria5(X, bit);
+                case 6:
+                    return CriteriaStruct(X);
+            }
+        }
     }
 }
